@@ -218,12 +218,14 @@ AmCharts.addInitHandler( function( chart ) {
     }
 
     // load the file
-    AmCharts.loadFile( url, options, function( response ) {
+    AmCharts.loadFile( url, options, function( response, error ) {
 
       // error?
-      if ( false === response ) {
-        callFunction( options.error, options, chart );
+      if ( false  !== error ) {
+
+        callFunction( options.error, options, chart, response );
         raiseError( AmCharts.__( 'Error loading the file', chart.language ) + ': ' + url, false, options );
+
       } else {
 
         // determine the format
@@ -243,13 +245,13 @@ AmCharts.addInitHandler( function( chart ) {
             holder[ providerKey ] = AmCharts.parseJSON( response );
 
             if ( false === holder[ providerKey ] ) {
-              callFunction( options.error, options, chart );
+              callFunction( options.error, options, chart, response);
               raiseError( AmCharts.__( 'Error parsing JSON file', chart.language ) + ': ' + l.url, false, options );
               holder[ providerKey ] = [];
               return;
             } else {
               holder[ providerKey ] = postprocess( holder[ providerKey ], options );
-              callFunction( options.load, options, chart );
+              callFunction( options.load, options, chart, response);
             }
 
             break;
@@ -259,19 +261,19 @@ AmCharts.addInitHandler( function( chart ) {
             holder[ providerKey ] = AmCharts.parseCSV( response, options );
 
             if ( false === holder[ providerKey ] ) {
-              callFunction( options.error, options, chart );
+              callFunction( options.error, options, chart, response);
               raiseError( AmCharts.__( 'Error parsing CSV file', chart.language ) + ': ' + l.url, false, options );
               holder[ providerKey ] = [];
               return;
             } else {
               holder[ providerKey ] = postprocess( holder[ providerKey ], options );
-              callFunction( options.load, options, chart );
+              callFunction( options.load, options, chart, response);
             }
 
             break;
 
           default:
-            callFunction( options.error, options, chart );
+            callFunction( options.error, options, chart, response);
             raiseError( AmCharts.__( 'Unsupported data format', chart.language ) + ': ' + options.format, false, options.noStyles );
             return;
         }
@@ -551,12 +553,10 @@ AmCharts.loadFile = function( url, options, handler ) {
   // set handler for data if async loading
   request.onreadystatechange = function() {
 
-    if ( 4 === request.readyState && 404 === request.status )
-      handler.call( this, false );
-
-    else if ( 4 === request.readyState && 200 === request.status )
-      handler.call( this, request.responseText );
-
+    if ( 4 === request.readyState && 200 === request.status )
+      handler.call( this, request.responseText, false);
+    else if ( 4 === request.readyState )
+      handler.call( this, request.responseText, true);
   };
 
   // load the file

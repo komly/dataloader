@@ -232,7 +232,7 @@ AmCharts.makeChart( "chartdiv", {
       "complete": function ( chart ) {
         console.log( 'Woohoo! Finished loading' );
       },
-      "error": function ( options, chart ) {
+      "error": function ( options, chart, response ) {
         console.log( 'Ummm something went wrong loading this file: ' + options.url );
       },
       "progress": function( totalPercent, filePercent, url ) {
